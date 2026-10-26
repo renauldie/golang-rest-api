@@ -5,8 +5,6 @@ import (
 
 	"golang-rest-api/bootstrap"
 	"golang-rest-api/config"
-	"golang-rest-api/products"
-	"golang-rest-api/role"
 
 	"github.com/joho/godotenv"
 )
@@ -20,9 +18,10 @@ func main() {
 		log.Fatalf("Failed to connect DB: %v", err)
 	}
 
-	_ = db.AutoMigrate(&products.Product{}, &role.Role{})
+	//_ = db.AutoMigrate(&products.Product{}, &role.Role{})
 
-	clients := bootstrap.InitClients(cfg)
+	clientConfig := config.LoadClientConfig()
+	clients := bootstrap.InitClients(clientConfig)
 
 	router := bootstrap.SetupRouter(db, clients)
 

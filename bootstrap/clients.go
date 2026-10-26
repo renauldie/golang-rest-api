@@ -11,7 +11,7 @@ type Clients struct {
 	City cityclient.Client
 }
 
-func InitClients(cfg *config.Config) *Clients {
+func InitClients(cfg *config.ClientConfig) *Clients {
 	return &Clients{
 		City: cityclient.NewClient(cfg.CityApiURL, 10*time.Second),
 	}
