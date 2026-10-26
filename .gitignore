@@ -1,0 +1,26 @@
+# 1. Environment & Credentials
+.env
+*.env.local
+
+# 2. Binary Executables
+/golang-rest-api
+/rest-api-clean
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# 3. JetBrains / GoLand / IDE
+.idea/
+*.iml
+.vscode/
+
+# 4. OS metadata (Mac & Windows)
+.DS_Store
+Thumbs.db
+
+# 5. AI Assistant & tooling files
+skills/
+.gemini/
+.agents/
