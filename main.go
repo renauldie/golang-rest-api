@@ -20,6 +20,14 @@ func main() {
 
 	//_ = db.AutoMigrate(&products.Product{}, &role.Role{})
 
+	redisConfig := config.LoadRedisConfig()
+	redisClient, err := redisConfig.InitRedis()
+	if err != nil {
+		log.Fatalf("Failed to connect Redis: %v", err)
+	}
+
+	defer redisClient.Close()
+
 	clientConfig := config.LoadClientConfig()
 	clients := bootstrap.InitClients(clientConfig)
 
