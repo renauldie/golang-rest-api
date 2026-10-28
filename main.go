@@ -4,15 +4,17 @@ import (
 	"log"
 
 	"golang-rest-api/bootstrap"
-	"golang-rest-api/config"
+	"golang-rest-api/internal/config"
 
 	"github.com/joho/godotenv"
 )
 
 func main() {
 	_ = godotenv.Load()
-	cfg := config.LoadConfig()
 
+	appConfig := config.LoadAppConfig()
+
+	cfg := config.LoadConfig()
 	db, err := cfg.InitDB()
 	if err != nil {
 		log.Fatalf("Failed to connect DB: %v", err)
@@ -33,7 +35,8 @@ func main() {
 
 	router := bootstrap.SetupRouter(db, clients)
 
-	if err := router.Run(":8080"); err != nil {
+	log.Printf("Server is running on port %s [%s]", appConfig.Port, appConfig.Env)
+	if err := router.Run(appConfig.Address()); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }

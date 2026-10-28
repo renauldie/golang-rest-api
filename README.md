@@ -31,14 +31,16 @@ A robust, modular, and maintainable RESTful API written in **Go**, powered by th
 ├── client/                  # Outbound HTTP client integrations
 │   ├── city/                # Third-party city service client
 │   └── common/              # Common pooled HTTP client, error handlers, & response wrappers
-├── config/                  # App configurations (DB, Redis, Client)
 ├── internal/                # Private application code
+│   ├── config/              # App configurations (App, DB, Redis, Client)
 │   └── modules/             # Business feature domains (Package by Feature)
 │       ├── city/            # City domain (Handler, Service)
 │       ├── products/        # Products domain (Handler, Service, Repository, Entity, Request)
 │       ├── role/            # Role domain (Handler, Service, Repository, Entity, Request)
 │       └── users/           # Users domain (Handler, Service, Repository, Entity)
 ├── pkg/                     # Reusable utilities and middlewares (e.g., correlation ID)
+├── .env                     # Local environment variables
+├── .env.example             # Template environment variables
 ├── go.mod
 ├── go.sum
 └── main.go                  # Application entry point
@@ -70,8 +72,20 @@ Create your local `.env` configuration file from the provided `.env.example`:
 cp .env.example .env
 ```
 
-Pastikan konfigurasi database dan Redis telah sesuai:
+Sesuaikan konfigurasi environment sesuai kebutuhan Anda:
 ```env
+### Server Config
+ENV=development
+APP_PORT=8080
+
+### DB Config
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=your_user
+DB_PASSWORD=your_password
+DB_NAME=your_db
+
+### Redis Config
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
@@ -94,9 +108,9 @@ Start the application:
 go run main.go
 ```
 
-The server will initialize the database schema and start listening on:
+The server will initialize the dependencies and start listening on:
 ```
-http://localhost:8080
+http://localhost:<APP_PORT> (default: 8080)
 ```
 
 ---

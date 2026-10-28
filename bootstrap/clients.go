@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	cityclient "golang-rest-api/client/city"
-	"golang-rest-api/config"
+	"golang-rest-api/internal/config"
 )
 
 type Clients struct {
