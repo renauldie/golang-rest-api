@@ -1,10 +1,10 @@
 package bootstrap
 
 import (
-	"golang-rest-api/city"
+	"golang-rest-api/internal/modules/city"
+	"golang-rest-api/internal/modules/products"
+	"golang-rest-api/internal/modules/role"
 	"golang-rest-api/pkg/correlation"
-	"golang-rest-api/products"
-	"golang-rest-api/role"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

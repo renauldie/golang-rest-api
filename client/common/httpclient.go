@@ -36,7 +36,6 @@ func WithAccept(accept string) RequestOption {
 	return WithHeader("Accept", accept)
 }
 
-// NewPooledHTTPClient membuat http.Client dengan connection pool optimal untuk enterprise
 func NewPooledHTTPClient(timeout time.Duration) *http.Client {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,

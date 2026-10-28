@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"golang-rest-api/city"
 	cityclient "golang-rest-api/client/city"
+	"golang-rest-api/internal/modules/city"
 )
 
 type mockCityClient struct {
