@@ -1,8 +1,6 @@
 package bootstrap
 
 import (
-	"time"
-
 	cityclient "golang-rest-api/client/city"
 	"golang-rest-api/config"
 )
@@ -13,6 +11,6 @@ type Clients struct {
 
 func InitClients(cfg *config.ClientConfig) *Clients {
 	return &Clients{
-		City: cityclient.NewClient(cfg.CityApiURL, 10*time.Second),
+		City: cityclient.NewClient(cfg.City),
 	}
 }

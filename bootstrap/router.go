@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"golang-rest-api/city"
+	"golang-rest-api/pkg/correlation"
 	"golang-rest-api/products"
 	"golang-rest-api/role"
 
@@ -11,6 +12,8 @@ import (
 
 func SetupRouter(db *gorm.DB, clients *Clients) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(correlation.Middleware())
 
 	productRepo := products.NewRepository(db)
 	productService := products.NewService(productRepo)
@@ -35,8 +38,9 @@ func SetupRouter(db *gorm.DB, clients *Clients) *gin.Engine {
 		api.POST("/role", roleHandler.Store)
 
 		// City (External API integration)
-		api.GET("/city", cityHandler.GetCities)
 		api.GET("/city/:id", cityHandler.GetCities)
+		api.GET("/city-by-id", cityHandler.GetCityByID)
+
 	}
 
 	return router

@@ -2,65 +2,76 @@ package cityclient
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"golang-rest-api/client/common"
 	"net/http"
-	"os"
+	"net/url"
 	"strings"
 	"time"
 )
 
+type Config struct {
+	CityURL     string
+	CityByIDURL string
+	Timeout     time.Duration
+}
+
 type Client interface {
 	GetCities(ctx context.Context, id string) ([]City, error)
+	GetCityByID(ctx context.Context, id string) (*City, error)
 }
 
 type client struct {
-	cityURL    string
+	cfg        Config
 	httpClient *http.Client
 }
 
-func NewClient(cityURL string, timeout time.Duration) Client {
-	if cityURL == "" {
-		cityURL = os.Getenv("CITY_API_URL")
+func NewClient(cfg Config) Client {
+	if cfg.Timeout <= 0 {
+		cfg.Timeout = 10 * time.Second
 	}
 
-	if timeout <= 0 {
-		timeout = 10 * time.Second
-	}
+	cfg.CityURL = strings.TrimRight(cfg.CityURL, "/")
+	cfg.CityByIDURL = strings.TrimRight(cfg.CityByIDURL, "/")
 
 	return &client{
-		cityURL: strings.TrimRight(cityURL, "/"),
-		httpClient: &http.Client{
-			Timeout: timeout,
-		},
+		cfg:        cfg,
+		httpClient: common.NewPooledHTTPClient(cfg.Timeout),
 	}
 }
 
-func (c *client) GetCities(ctx context.Context, id string) (cities []City, err error) {
-	targetURL := fmt.Sprintf("%s/%s", c.cityURL, id)
-
-	var req *http.Request
-	req, err = http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+func (c *client) GetCities(ctx context.Context, id string) ([]City, error) {
+	targetURL := c.cfg.CityURL
+	if id != "" {
+		targetURL = fmt.Sprintf("%s/%s", c.cfg.CityURL, id)
 	}
 
-	req.Header.Set("Accept", "application/json")
-
-	var resp *http.Response
-	resp, err = c.httpClient.Do(req)
+	var cities []City
+	err := common.Exchange(ctx, c.httpClient, http.MethodGet, targetURL, nil, &cities)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call city external api (%s): %w", targetURL, err)
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("external api returned status code: %d from %s", resp.StatusCode, targetURL)
-	}
-
-	if decodeErr := json.NewDecoder(resp.Body).Decode(&cities); decodeErr != nil {
-		return nil, fmt.Errorf("failed to decode response from %s: %w", targetURL, decodeErr)
-	}
 
 	return cities, nil
+}
+
+func (c *client) GetCityByID(ctx context.Context, id string) (*City, error) {
+	parsedURL, err := url.Parse(c.cfg.CityByIDURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse city by id url: %w", err)
+	}
+
+	q := parsedURL.Query()
+	q.Set("id", id)
+	parsedURL.RawQuery = q.Encode()
+
+	targetURL := parsedURL.String()
+
+	var city City
+	err = common.Exchange(ctx, c.httpClient, http.MethodGet, targetURL, nil, &city)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call city by id external api (%s): %w", targetURL, err)
+	}
+
+	return &city, nil
 }

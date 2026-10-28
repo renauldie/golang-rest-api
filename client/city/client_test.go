@@ -25,7 +25,10 @@ func TestCityClient_GetCities_DynamicURL(t *testing.T) {
 	defer server.Close()
 
 	dynamicCityURL := server.URL + "/api/xco/irh/page/migration/city"
-	client := cityclient.NewClient(dynamicCityURL, 2*time.Second)
+	client := cityclient.NewClient(cityclient.Config{
+		CityURL: dynamicCityURL,
+		Timeout: 2 * time.Second,
+	})
 
 	cities, err := client.GetCities(context.Background(), "12")
 	if err != nil {
@@ -40,11 +43,45 @@ func TestCityClient_GetCities_DynamicURL(t *testing.T) {
 	}
 }
 
-func TestCityClient_GetCities_CatchesPanic(t *testing.T) {
-	// Menguji bahwa blok defer-recover (Try-Catch) berhasil menangkap panic
-	client := cityclient.NewClient("http://localhost:7024/api/xco/irh/page/migration/city", 1*time.Second)
+func TestCityClient_GetCityByID(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/xco/irh/page/migration/city-by-id" {
+			t.Errorf("unexpected path: %s", r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if r.URL.Query().Get("id") != "12" {
+			t.Errorf("unexpected id query: %s", r.URL.Query().Get("id"))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id":"12","name":"Bandung"}`))
+	}))
+	defer server.Close()
 
-	// Passing nil context akan memicu error pada NewRequestWithContext
+	client := cityclient.NewClient(cityclient.Config{
+		CityByIDURL: server.URL + "/api/xco/irh/page/migration/city-by-id",
+		Timeout:     2 * time.Second,
+	})
+
+	city, err := client.GetCityByID(context.Background(), "12")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if city == nil || city.ID != "12" || city.Name != "Bandung" {
+		t.Errorf("unexpected city result: %+v", city)
+	}
+}
+
+func TestCityClient_GetCities_CatchesPanic(t *testing.T) {
+	client := cityclient.NewClient(cityclient.Config{
+		CityURL: "http://localhost:7024/api/xco/irh/page/migration/city",
+		Timeout: 1 * time.Second,
+	})
+
 	_, err := client.GetCities(nil, "12")
 	if err == nil {
 		t.Fatalf("expected error when context is nil, got nil")

@@ -28,3 +28,26 @@ func (h *Handler) GetCities(c *gin.Context) {
 		"data": cities,
 	})
 }
+
+func (h *Handler) GetCityByID(c *gin.Context) {
+	id := c.Query("id")
+
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "query parameter 'id' is required",
+		})
+		return
+	}
+
+	city, err := h.service.GetCityByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": city,
+	})
+}
